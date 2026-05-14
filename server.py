@@ -202,5 +202,211 @@ def get_meal_details(meal_id):
     meals = response.get("meals")
 
     return meals[0] if meals else None
+# CLIENT HANDLER
+
+def handle_client(client_socket, client_address):
+
+    client_name = "Unknown"
+
+    print_line()
+    print(f"Connection from {client_address}")
+    print_line()
+
+    try:
+
+        while True:
+
+            request = receive_json(client_socket)
+
+            # CLIENT DISCONNECTED
+            if request is None:
+
+                print(f"\n[DISCONNECTED] {client_name}")
+                break
+
+            request_type = request.get("type")
+            request_value = request.get("value")
+
+            # USERNAME
+            if request_type == "username":
+
+                client_name = request_value
+
+                print(f"[CONNECTED] {client_name}")
+
+                send_json(client_socket, {
+                    "status": "ok",
+                    "message": f"Welcome {client_name}"
+                })
+            # REFERENCE LISTS
+            elif request_type == "list_categories":
+
+                print(f"\n[{client_name}] Categories")
+                print("Served from CACHE")
+
+                send_json(client_socket, {
+                    "status": "ok",
+                    "results": reference_cache["categories"]
+                })
+
+            elif request_type == "list_areas":
+
+                print(f"\n[{client_name}] Areas")
+                print("Served from CACHE")
+
+                send_json(client_socket, {
+                    "status": "ok",
+                    "results": reference_cache["areas"]
+                })
+
+            elif request_type == "list_ingredients":
+
+                print(f"\n[{client_name}] Ingredients")
+                print("Served from CACHE")
+
+                send_json(client_socket, {
+                    "status": "ok",
+                    "results": reference_cache["ingredients"][:50]
+                })
+                # =========================
+            # SEARCH/FILTER
+            # =========================
+
+            elif request_type == "search_name":
+
+                print(f"\n[{client_name}] Search: {request_value}")
+
+                meals = search_by_name(request_value)
+
+                save_recipe_json(
+                    client_name,
+                    "search_name",
+                    meals
+                )
+
+                send_json(client_socket, {
+                    "status": "ok",
+                    "results": meals
+                })
+
+            elif request_type == "filter_category":
+
+                print(f"\n[{client_name}] Category: {request_value}")
+
+                meals = filter_by_category(request_value)
+
+                save_recipe_json(
+                    client_name,
+                    "filter_category",
+                    meals
+                )
+
+                send_json(client_socket, {
+                    "status": "ok",
+                    "results": meals
+                })
+
+            elif request_type == "filter_area":
+
+                print(f"\n[{client_name}] Area: {request_value}")
+
+                meals = filter_by_area(request_value)
+
+                save_recipe_json(
+                    client_name,
+                    "filter_area",
+                    meals
+                )
+
+                send_json(client_socket, {
+                    "status": "ok",
+                    "results": meals
+                })
+
+            elif request_type == "filter_ingredient":
+
+                print(f"\n[{client_name}] Ingredient: {request_value}")
+
+                meals = filter_by_ingredient(request_value)
+
+                save_recipe_json(
+                    client_name,
+                    "filter_ingredient",
+                    meals
+                )
+
+                send_json(client_socket, {
+                    "status": "ok",
+                    "results": meals
+                })
+
+            # =========================
+            # RANDOM RECIPE
+            # =========================
+
+            elif request_type == "random_recipe":
+
+                print(f"\n[{client_name}] Random recipe")
+
+                meal = get_random_recipe()
+
+                save_recipe_json(
+                    client_name,
+                    "random_recipe",
+                    meal
+                )
+
+                send_json(client_socket, {
+                    "status": "ok",
+                    "meal": meal
+                })
+
+            # =========================
+            # FULL DETAILS
+            # =========================
+
+            elif request_type == "meal_details":
+
+                print(f"\n[{client_name}] Meal details: {request_value}")
+
+                meal = get_meal_details(request_value)
+
+                send_json(client_socket, {
+                    "status": "ok",
+                    "meal": meal
+                })
+
+            # =========================
+            # QUIT
+            # =========================
+
+            elif request_type == "quit":
+
+                print(f"\n[QUIT] {client_name}")
+                break
+
+            # =========================
+            # INVALID REQUEST
+            # =========================
+
+            else:
+
+                send_json(client_socket, {
+                    "status": "error",
+                    "message": "Invalid request"
+                })
+
+    except Exception as e:
+
+        print(f"\nError with {client_name}: {e}")
+
+    finally:
+
+        client_socket.close()
+
+        print(f"Closed connection for {client_name}")
+
+
+
 
 
