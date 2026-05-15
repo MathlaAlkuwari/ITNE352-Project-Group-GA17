@@ -180,3 +180,172 @@ def print_ingredients(results):
 
         print(f"{index}. {item.get('strIngredient')}")
 
+# Full details request
+
+def request_full_recipe(sock, results):
+
+    try:
+
+        selected = input(
+            "\nEnter recipe number "
+            "for full details (0 to cancel): "
+        )
+
+        if selected == "0":
+            return
+
+        selected_index = int(selected) - 1
+
+        if (
+            selected_index < 0
+            or
+            selected_index >= len(results)
+        ):
+
+            print("Invalid selection.")
+            wait()
+            return
+
+        meal_id = results[selected_index]["idMeal"]
+
+        request = {
+            "type": "meal_details",
+            "value": meal_id
+        }
+
+        send_json(sock, request)
+
+        response = receive_json(sock)
+
+        if response is None:
+
+            print("Server disconnected.")
+            return
+
+        if response["status"] == "ok":
+
+            print_full_recipe(response["meal"])
+
+        else:
+
+            print(response["message"])
+
+    except ValueError:
+
+        print("Please enter a valid number.")
+
+    except Exception as e:
+
+        print("Error:", e)
+
+    wait()
+
+# Recipes menu
+
+def recipes_menu(sock):
+
+    while True:
+
+        print_line()
+        print("RECIPES MENU")
+        print_line()
+
+        print("1. Search by name")
+        print("2. Filter by category")
+        print("3. Filter by area")
+        print("4. Filter by ingredient")
+        print("5. Random recipe")
+        print("6. Back to main menu")
+
+        choice = input("\nChoose option: ")
+
+        # Search name
+
+        if choice == "1":
+
+            keyword = input(
+                "\nEnter recipe keyword: "
+            ).strip()
+
+            if not keyword:
+
+                print("Keyword cannot be empty.")
+                wait()
+                continue
+
+            request = {
+                "type": "search_name",
+                "value": keyword
+            }
+
+            send_json(sock, request)
+
+            response = receive_json(sock)
+
+            if response["status"] == "ok":
+
+                results = response["results"]
+
+                if not results:
+
+                    print("No recipes found.")
+                    wait()
+                    continue
+
+                print_recipe_list(results)
+
+                request_full_recipe(sock, results)
+
+            else:
+
+                print(response["message"])
+                wait()
+
+        # Filter category
+
+        elif choice == "2":
+
+            print("\nAllowed categories:")
+
+            for category in VALID_CATEGORIES:
+
+                print("-", category)
+
+            category = input(
+                "\nEnter category: "
+            ).strip()
+
+            if category not in VALID_CATEGORIES:
+
+                print("Invalid category.")
+                wait()
+                continue
+
+            request = {
+                "type": "filter_category",
+                "value": category
+            }
+
+            send_json(sock, request)
+
+            response = receive_json(sock)
+
+            if response["status"] == "ok":
+
+                results = response["results"]
+
+                if not results:
+
+                    print("No recipes found.")
+                    wait()
+                    continue
+
+                print_recipe_list(results)
+
+                request_full_recipe(sock, results)
+
+            else:
+
+                print(response["message"])
+                wait()
+
