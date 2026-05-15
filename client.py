@@ -1,6 +1,4 @@
-# =========================
 # client.py
-# =========================
 
 import socket
 import json
@@ -9,9 +7,7 @@ import struct
 SERVER_HOST = "127.0.0.1"
 SERVER_PORT = 5000
 
-# =========================
 # VALID INPUTS
-# =========================
 
 VALID_CATEGORIES = [
     "Beef",
@@ -34,9 +30,7 @@ VALID_AREAS = [
     "Thai"
 ]
 
-# =========================
 # TCP FRAMING
-# =========================
 
 def send_json(sock, data):
 
@@ -88,9 +82,7 @@ def receive_json(sock):
 
     return json.loads(message_data.decode())
 
-# =========================
 # DISPLAY FUNCTIONS
-# =========================
 
 def print_line():
 
