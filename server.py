@@ -268,10 +268,9 @@ def handle_client(client_socket, client_address):
                     "status": "ok",
                     "results": reference_cache["ingredients"][:50]
                 })
-                # =========================
-            # SEARCH/FILTER
-            # =========================
-
+            
+            # search by filter
+            
             elif request_type == "search_name":
 
                 print(f"\n[{client_name}] Search: {request_value}")
@@ -340,9 +339,7 @@ def handle_client(client_socket, client_address):
                     "results": meals
                 })
 
-            # =========================
-            # RANDOM RECIPE
-            # =========================
+            # random recipe
 
             elif request_type == "random_recipe":
 
@@ -361,9 +358,7 @@ def handle_client(client_socket, client_address):
                     "meal": meal
                 })
 
-            # =========================
-            # FULL DETAILS
-            # =========================
+            # full details
 
             elif request_type == "meal_details":
 
@@ -376,18 +371,14 @@ def handle_client(client_socket, client_address):
                     "meal": meal
                 })
 
-            # =========================
-            # QUIT
-            # =========================
+            # to quit
 
             elif request_type == "quit":
 
                 print(f"\n[QUIT] {client_name}")
                 break
 
-            # =========================
-            # INVALID REQUEST
-            # =========================
+            # invalid requests 
 
             else:
 
@@ -403,6 +394,50 @@ def handle_client(client_socket, client_address):
     finally:
 
         client_socket.close()
+
+# START SERVER
+
+def start_server():
+
+    load_reference_cache()
+
+    server_socket = socket.socket(
+        socket.AF_INET,
+        socket.SOCK_STREAM
+    )
+    
+    # REUSE ADDRESS
+    server_socket.setsockopt(
+        socket.SOL_SOCKET,
+        socket.SO_REUSEADDR,
+        1
+    )
+
+    server_socket.bind((HOST, PORT))
+
+    server_socket.listen(5)
+
+    print_line()
+    print(f"Server listening on {HOST}:{PORT}")
+    print_line()
+
+    while True:
+
+        client_socket, client_address = server_socket.accept()
+
+        client_thread = threading.Thread(
+            target=handle_client,
+            args=(client_socket, client_address)
+        )
+
+        client_thread.start()
+
+        print(f"Active clients: {threading.active_count() - 1}")
+
+# MAIN
+if __name__ == "__main__":
+
+    start_server()
 
         print(f"Closed connection for {client_name}")
 
