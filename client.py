@@ -348,4 +348,102 @@ def recipes_menu(sock):
 
                 print(response["message"])
                 wait()
+                
+        # Filter area
+
+        elif choice == "3":
+
+            print("\nAllowed areas:")
+
+            for area in VALID_AREAS:
+
+                print("-", area)
+
+            area = input(
+                "\nEnter area: "
+            ).strip()
+
+            if area not in VALID_AREAS:
+
+                print("Invalid area.")
+                wait()
+                continue
+
+            request = {
+                "type": "filter_area",
+                "value": area
+            }
+
+            send_json(sock, request)
+
+            response = receive_json(sock)
+
+            if response["status"] == "ok":
+
+                results = response["results"]
+
+                if not results:
+
+                    print("No recipes found.")
+                    wait()
+                    continue
+
+                print_recipe_list(results)
+
+                request_full_recipe(sock, results)
+
+            else:
+
+                print(response["message"])
+                wait()
+
+        # Filter ingredient
+
+        elif choice == "4":
+
+            ingredient = input(
+                "\nEnter ingredient: "
+            ).strip()
+
+            if not ingredient:
+
+                print(
+                    "Ingredient cannot be empty."
+                )
+
+                wait()
+                continue
+
+            ingredient = ingredient.replace(
+                " ",
+                "_"
+            )
+
+            request = {
+                "type": "filter_ingredient",
+                "value": ingredient
+            }
+
+            send_json(sock, request)
+
+            response = receive_json(sock)
+
+            if response["status"] == "ok":
+
+                results = response["results"]
+
+                if not results:
+
+                    print("No recipes found.")
+                    wait()
+                    continue
+
+                print_recipe_list(results)
+
+                request_full_recipe(sock, results)
+
+            else:
+
+                print(response["message"])
+                wait()
 
