@@ -12,7 +12,7 @@ from tkinter import (
 SERVER_HOST = "127.0.0.1"
 SERVER_PORT = 5000
 
-# valid inputs to choose from
+# valid inputs 
 VALID_CATEGORIES = [
     "Beef",
     "Chicken",
@@ -34,7 +34,7 @@ VALID_AREAS = [
     "Thai"
 ]
 
-# GUI in client
+# GUI client class
 class MealDBClientGUI:
 
     def __init__(self, root):
@@ -134,7 +134,7 @@ class MealDBClientGUI:
             message_data.decode()
         )
 
-    # connection
+    # connection to the server to work
     def connect_to_server(self):
 
         try:
@@ -157,7 +157,6 @@ class MealDBClientGUI:
 
             self.root.destroy()
 
- 
     # GUI
     def create_widgets(self):
 
@@ -169,8 +168,7 @@ class MealDBClientGUI:
 
         title.pack(pady=10)
 
-        
-        # buttons for categories
+        # button framing
         button_frame = tk.Frame(self.root)
 
         button_frame.pack(pady=10)
@@ -235,7 +233,7 @@ class MealDBClientGUI:
                 col = 0
                 row += 1
 
-        # displaying lists
+        # showing treeview
         columns = (
             "Meal ID",
             "Recipe Name"
@@ -280,7 +278,8 @@ class MealDBClientGUI:
             self.show_selected_recipe
         )
 
-        # outputs showing 
+        # 
+        # show ouput and can scrol through it 
         output_frame = tk.Frame(self.root)
 
         output_frame.pack(
@@ -315,7 +314,7 @@ class MealDBClientGUI:
             command=self.output_text.yview
         )
 
-    # helpers to support the programs
+    # helpers 
     def clear_output(self):
 
         self.output_text.delete(
@@ -329,7 +328,7 @@ class MealDBClientGUI:
 
             self.tree.delete(item)
 
-    # displying lists
+    # display lists 
     def display_recipe_list(self, results):
 
         self.clear_tree()
@@ -369,7 +368,7 @@ class MealDBClientGUI:
                 f"{index}. {item.get(key)}\n"
             )
 
-    # displayong full recipe
+    # display all recipes in the program
     def display_full_recipe(self, meal):
 
         self.clear_output()
@@ -438,5 +437,281 @@ class MealDBClientGUI:
 
                 self.output_text.insert(
                     tk.END,
-                    f"- {ingredient} : {measure}\n"-9 
+                    f"- {ingredient} : {measure}\n"
                 )
+
+    # search for specific recipe name 
+    def search_name(self):
+
+        keyword = simpledialog.askstring(
+            "Search",
+            "Enter recipe name:"
+        )
+
+        if not keyword:
+            return
+
+        self.send_json({
+            "type": "search_name",
+            "value": keyword
+        })
+
+        response = self.receive_json()
+
+        if response["status"] == "ok":
+
+            results = response["results"]
+
+            if not results:
+
+                messagebox.showinfo(
+                    "No Results",
+                    "No recipes found."
+                )
+
+                return
+
+            self.display_recipe_list(results)
+
+    # filter category of the recipe 
+    def filter_category(self):
+
+        category = simpledialog.askstring(
+            "Category",
+            "Choose category:\n\n"
+            + "\n".join(VALID_CATEGORIES)
+        )
+
+        if not category:
+            return
+
+        if category not in VALID_CATEGORIES:
+
+            messagebox.showerror(
+                "Invalid",
+                "Invalid category."
+            )
+
+            return
+
+        self.send_json({
+            "type": "filter_category",
+            "value": category
+        })
+
+        response = self.receive_json()
+
+        if response["status"] == "ok":
+
+            results = response["results"]
+
+            if not results:
+
+                messagebox.showinfo(
+                    "No Results",
+                    "No recipes found."
+                )
+
+                return
+
+            self.display_recipe_list(results)
+
+    # filter the area we are choosing from 
+    def filter_area(self):
+
+        area = simpledialog.askstring(
+            "Area",
+            "Choose area:\n\n"
+            + "\n".join(VALID_AREAS)
+        )
+
+        if not area:
+            return
+
+        if area not in VALID_AREAS:
+
+            messagebox.showerror(
+                "Invalid",
+                "Invalid area."
+            )
+
+            return
+
+        self.send_json({
+            "type": "filter_area",
+            "value": area
+        })
+
+        response = self.receive_json()
+
+        if response["status"] == "ok":
+
+            results = response["results"]
+
+            if not results:
+
+                messagebox.showinfo(
+                    "No Results",
+                    "No recipes found."
+                )
+
+                return
+
+            self.display_recipe_list(results)
+
+    # ingrediant choosing if we want something specific in the food
+    def filter_ingredient(self):
+
+        ingredient = simpledialog.askstring(
+            "Ingredient",
+            "Enter ingredient:"
+        )
+
+        if not ingredient:
+            return
+
+        ingredient = ingredient.replace(
+            " ",
+            "_"
+        )
+
+        self.send_json({
+            "type": "filter_ingredient",
+            "value": ingredient
+        })
+
+        response = self.receive_json()
+
+        if response["status"] == "ok":
+
+            results = response["results"]
+
+            if not results:
+
+                messagebox.showinfo(
+                    "No Results",
+                    "No recipes found."
+                )
+
+                return
+
+            self.display_recipe_list(results)
+
+    # to have a random recipe when nothing in mind 
+    def random_recipe(self):
+
+        self.send_json({
+            "type": "random_recipe"
+        })
+
+        response = self.receive_json()
+
+        if response["status"] == "ok":
+
+            self.display_full_recipe(
+                response["meal"]
+            )
+
+    # reference list but not to choose from 
+    def list_categories(self):
+
+        self.send_json({
+            "type": "list_categories"
+        })
+
+        response = self.receive_json()
+
+        if response["status"] == "ok":
+
+            self.display_reference_list(
+                response["results"],
+                "strCategory"
+            )
+
+    def list_areas(self):
+
+        self.send_json({
+            "type": "list_areas"
+        })
+
+        response = self.receive_json()
+
+        if response["status"] == "ok":
+
+            self.display_reference_list(
+                response["results"],
+                "strArea"
+            )
+
+    def list_ingredients(self):
+
+        self.send_json({
+            "type": "list_ingredients"
+        })
+
+        response = self.receive_json()
+
+        if response["status"] == "ok":
+
+            self.display_reference_list(
+                response["results"],
+                "strIngredient"
+            )
+
+    # double click to choose the wanted recipe
+    def show_selected_recipe(self, event):
+
+        selected = self.tree.focus()
+
+        if not selected:
+            return
+
+        values = self.tree.item(
+            selected,
+            "values"
+        )
+
+        meal_id = values[0]
+
+        self.send_json({
+            "type": "meal_details",
+            "value": meal_id
+        })
+
+        response = self.receive_json()
+
+        if response["status"] == "ok":
+
+            self.display_full_recipe(
+                response["meal"]
+            )
+
+    # for quitting
+    def quit_program(self):
+
+        try:
+
+            self.send_json({
+                "type": "quit"
+            })
+
+            self.socket.close()
+
+        except:
+            pass
+
+        self.root.destroy()
+
+# main
+def main():
+
+    root = tk.Tk()
+
+    app = MealDBClientGUI(root)
+
+    root.mainloop()
+
+# starting the program 
+if __name__ == "__main__":
+
+    main()
