@@ -446,4 +446,116 @@ def recipes_menu(sock):
 
                 print(response["message"])
                 wait()
+        # Random recipe
+
+        elif choice == "5":
+
+            request = {
+                "type": "random_recipe"
+            }
+
+            send_json(sock, request)
+
+            response = receive_json(sock)
+
+            if response["status"] == "ok":
+
+                print_full_recipe(
+                    response["meal"]
+                )
+
+            else:
+
+                print(response["message"])
+
+            wait()
+
+        # Back
+
+        elif choice == "6":
+
+            break
+
+        else:
+
+            print("Invalid option.")
+            wait()
+
+# Reference menu
+
+def reference_menu(sock):
+
+    while True:
+
+        print_line()
+        print("REFERENCE MENU")
+        print_line()
+
+        print("1. List all categories")
+        print("2. List all areas")
+        print("3. List all ingredients")
+        print("4. Back to main menu")
+
+        choice = input("\nChoose option: ")
+
+        if choice == "1":
+
+            send_json(sock, {
+                "type": "list_categories"
+            })
+
+            response = receive_json(sock)
+
+            if response["status"] == "ok":
+
+                print_categories(
+                    response["results"]
+                )
+
+            wait()
+
+        elif choice == "2":
+
+            send_json(sock, {
+                "type": "list_areas"
+            })
+
+            response = receive_json(sock)
+
+            if response["status"] == "ok":
+
+                print_areas(
+                    response["results"]
+                )
+
+            wait()
+
+        elif choice == "3":
+
+            send_json(sock, {
+                "type": "list_ingredients"
+            })
+
+            response = receive_json(sock)
+
+            if response["status"] == "ok":
+
+                print_ingredients(
+                    response["results"]
+                )
+
+            wait()
+
+        elif choice == "4":
+
+            break
+
+        else:
+
+            print("Invalid option.")
+            wait()
+
+
+
+
 
