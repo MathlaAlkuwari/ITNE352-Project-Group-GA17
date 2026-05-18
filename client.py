@@ -555,6 +555,103 @@ def reference_menu(sock):
             print("Invalid option.")
             wait()
 
+# Main
+
+def main():
+
+    try:
+
+        print_line()
+        print("MEALDB CLIENT")
+        print_line()
+
+        client_socket = socket.socket(
+            socket.AF_INET,
+            socket.SOCK_STREAM
+        )
+
+        client_socket.connect(
+            (SERVER_HOST, SERVER_PORT)
+        )
+
+        print("Connected to server.")
+
+        username = input(
+            "\nEnter username: "
+        ).strip()
+
+        while not username:
+
+            print("Username cannot be empty.")
+
+            username = input(
+                "Enter username: "
+            ).strip()
+
+        send_json(client_socket, {
+            "type": "username",
+            "value": username
+        })
+
+        response = receive_json(client_socket)
+
+        print(response["message"])
+
+        while True:
+
+            print_line()
+            print("MAIN MENU")
+            print_line()
+
+            print("1. Browse recipes")
+            print("2. Reference lists")
+            print("3. Quit")
+
+            choice = input(
+                "\nChoose option: "
+            )
+
+            if choice == "1":
+
+                recipes_menu(client_socket)
+
+            elif choice == "2":
+
+                reference_menu(client_socket)
+
+            elif choice == "3":
+
+                send_json(client_socket, {
+                    "type": "quit"
+                })
+
+                print(
+                    "\nDisconnected from server."
+                )
+
+                break
+
+            else:
+
+                print("Invalid option.")
+                wait()
+
+        client_socket.close()
+
+    except ConnectionRefusedError:
+
+        print("\nServer is not running.")
+
+    except Exception as e:
+
+        print("\nError:", e)
+
+# Start program
+
+if __name__ == "__main__":
+
+    main()
+
 
 
 
